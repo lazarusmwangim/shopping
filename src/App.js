@@ -11,91 +11,111 @@ import {
   View,
   withAuthenticator,
 } from "@aws-amplify/ui-react";
-import { listNotes } from "./graphql/queries";
+import { listShoppingLists } from "./graphql/queries";
 import {
-  createNote as createNoteMutation,
-  deleteNote as deleteNoteMutation,
+  createShoppingList as createListMutation,
+  deleteShoppingList as deleteListMutation,
 } from "./graphql/mutations";
 
 const App = ({ signOut }) => {
-  const [notes, setNotes] = useState([]);
+  const [items, setItem] = useState([]);
 
   useEffect(() => {
-    fetchNotes();
+    fetchShoppingList();
   }, []);
 
-  async function fetchNotes() {
-    const apiData = await API.graphql({ query: listNotes });
-    const notesFromAPI = apiData.data.listNotes.items;
-    setNotes(notesFromAPI);
+  async function fetchShoppingList() {
+    const apiData = await API.graphql({ query: listShoppingLists });
+    const listsFromAPI = apiData.data.listShoppingLists.items;
+    setItem(listsFromAPI);
   }
 
-  async function createNote(event) {
+  async function createShoppingList(event) {
     event.preventDefault();
     const form = new FormData(event.target);
     const data = {
       name: form.get("name"),
       description: form.get("description"),
+      price: form.get("price"),
+      image: form.get("image"),
     };
 
     await API.graphql({
-      query: createNoteMutation,
+      query: createListMutation,
       variables: { input: data },
     });
-    fetchNotes();
+    fetchShoppingList();
     //event.target.reset();
   }
 
-  async function deleteNote({ id }) {
-    const newNotes = notes.filter((note) => note.id !== id);
-    setNotes(newNotes);
+  async function deleteItem({ id }) {
+    const newItem = items.filter((note) => note.id !== id);
+    setItem(newItem);
     await API.graphql({
-      query: deleteNoteMutation,
+      query: deleteListMutation,
       variables: { input: { id } },
     });
   }
 
   return (
     <View className="App">
-      <Heading level={1}>My Notes App</Heading>
-      <View as="form" margin="3rem 0" onSubmit={createNote}>
+      <Heading level={1}>My Shopping List App</Heading>
+      <View as="form" margin="3rem 0" onSubmit={createShoppingList}>
         <Flex direction="row" justifyContent="center">
           <TextField
             name="name"
-            placeholder="Note Name"
-            label="Note Name"
+            placeholder="Item Name"
+            label="Item Name"
             labelHidden
             variation="quiet"
             required
           />
           <TextField
             name="description"
-            placeholder="Note Description"
-            label="Note Description"
+            placeholder="Item Description"
+            label="Item Description"
+            labelHidden
+            variation="quiet"
+            required
+          />
+          <TextField
+            name="price"
+            placeholder="Item Price"
+            label="Item Price"
+            labelHidden
+            variation="quiet"
+            required
+          />
+          <TextField
+            name="image"
+            placeholder="Item Image"
+            label="Item Image"
             labelHidden
             variation="quiet"
             required
           />
           <Button type="submit" variation="primary">
-            Create Note
+            Create Item
           </Button>
         </Flex>
       </View>
-      <Heading level={2}>Current Notes</Heading>
+      <Heading level={2}>Current Items</Heading>
       <View margin="3rem 0">
-        {notes.map((note) => (
+        {items.map((item) => (
           <Flex
-            key={note.id || note.name}
+            key={item.id || item.name}
             direction="row"
             justifyContent="center"
             alignItems="center"
           >
             <Text as="strong" fontWeight={700}>
-              {note.name}
+              {item.name}
             </Text>
-            <Text as="span">{note.description}</Text>
-            <Button variation="link" onClick={() => deleteNote(note)}>
-              Delete note
+            <Text as="span">{item.description}</Text>
+            <Text as="span">{item.price}</Text>
+            <Text as="span">{item.image}</Text>
+            <Button variation="link" onClick={() => deleteItem(item)}>
+              Delete Item
             </Button>
           </Flex>
         ))}

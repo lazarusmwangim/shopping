@@ -7,5 +7,5 @@ type ShoppingList @model {
   name: String!
   description: String!
   price: Float!
-  iamge: String!
+  image: String!
 }
